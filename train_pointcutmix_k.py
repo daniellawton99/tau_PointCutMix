@@ -117,7 +117,7 @@ if __name__ == '__main__':
     ## Set hypeparameters
     ########################################
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type=str, default='pointnet', help='choose model type')
+    parser.add_argument('--model', type=str, default='pointnet_kcutmix', help='choose model type')
     parser.add_argument('--data', type=str, default='modelnet40', help='choose data set')
     parser.add_argument('--seed', type=int, default=0, help='manual random seed')
     parser.add_argument('--batch_size', type=int, default=16, help='input batch size')
@@ -141,7 +141,7 @@ if __name__ == '__main__':
     args.seed = args.seed if args.seed > 0 else random.randint(1, 10000)
 
     # dataset path
-    DATA_PATH = './data/modelnet40_normal_resampled/'
+    DATA_PATH = '../tau_Point-Transformers/modelnet40_normal_resampled/'
 
     ########################################
     ## Intiate model

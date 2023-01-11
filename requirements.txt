@@ -1,7 +1,9 @@
 numpy
-torch==1.3.0
-torchvision==0.4.1
+torch
+torchvision
 matplotlib
 scikit-learn
 scipy
 cffi
+sklearn
+h5py
