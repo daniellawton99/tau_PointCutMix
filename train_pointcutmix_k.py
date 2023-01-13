@@ -24,6 +24,15 @@ sys.path.append("./emd/")
 import emd_module as emd
 
 
+import open3d
+
+
+def display_point_cloud(points):
+    point_cloud = open3d.geometry.PointCloud()
+    point_cloud.points = open3d.utility.Vector3dVector(points)
+    open3d.visualization.draw_geometries([point_cloud])
+
+
 def gen_train_log(args):
     if not os.path.isdir('logs_train'):
         os.mkdir('logs_train')
@@ -141,7 +150,7 @@ if __name__ == '__main__':
     args.seed = args.seed if args.seed > 0 else random.randint(1, 10000)
 
     # dataset path
-    DATA_PATH = '../tau_Point-Transformers/modelnet40_normal_resampled/'
+    DATA_PATH = 'modelnet40_normal_resampled'
 
     ########################################
     ## Intiate model
@@ -296,13 +305,14 @@ if __name__ == '__main__':
                 random_point = torch.from_numpy(np.random.choice(1024, B, replace=False, p=None))
                 # kNN
                 ind1 = torch.tensor(range(B))
-                query = point_a[ind1, random_point].view(B, 1, 3)
+                query = point_a[ind1.long(), random_point.long()].view(B, 1, 3)
                 dist = torch.sqrt(torch.sum((point_a - query.repeat(1, args.num_points, 1)) ** 2, 2))
                 idxs = dist.topk(int_lam, dim=1, largest=False, sorted=True).indices
                 for i2 in range(B):
                     points[i2, idxs[i2], :] = point_c[i2, idxs[i2], :]
                 # adjust lambda to exactly match point ratio
                 lam = int_lam * 1.0 / args.num_points
+                display_point_cloud(points[0].detach().cpu().numpy())
                 points = points.transpose(2, 1)
                 pred, trans_feat = model(points)
                 loss = criterion(pred, target_a.long()) * (1. - lam) + criterion(pred, target_b.long()) * lam
