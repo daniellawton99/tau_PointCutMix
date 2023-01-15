@@ -25,6 +25,7 @@ import emd_module as emd
 
 
 import open3d
+from models.point_transformer import PointTransformerCls
 
 
 def display_point_cloud(points):
@@ -126,12 +127,12 @@ if __name__ == '__main__':
     ## Set hypeparameters
     ########################################
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type=str, default='pointnet_kcutmix', help='choose model type')
+    parser.add_argument('--model', type=str, default='point_transformer_kcutmix', help='choose model type')
     parser.add_argument('--data', type=str, default='modelnet40', help='choose data set')
     parser.add_argument('--seed', type=int, default=0, help='manual random seed')
     parser.add_argument('--batch_size', type=int, default=16, help='input batch size')
     parser.add_argument('--num_points', type=int, default=1024, help='input batch size')
-    parser.add_argument('--epochs', type=int, default=300, help='number of epochs to train for')
+    parser.add_argument('--epochs', type=int, default=72, help='number of epochs to train for')  # 60 + 0.2 * 60
     parser.add_argument('--optimizer', type=str, default='Adam', help='optimizer for training')
     parser.add_argument('--lr', default=0.001, type=float, help='learning rate in training')
     parser.add_argument('--resume', type=str, default='/', help='resume path')
@@ -143,7 +144,7 @@ if __name__ == '__main__':
     parser.add_argument('--normal', action='store_true', default=False,
                         help='Whether to use normal information [default: False]')
     parser.add_argument('--beta', default=1, type=float, help='hyperparameter beta')
-    parser.add_argument('--cutmix_prob', default=0.5, type=float, help='cutmix probability')
+    parser.add_argument('--cutmix_prob', default=0.2, type=float, help='cutmix probability')
     args = parser.parse_args()
     args.feature_transform, args.augment = bool(args.feature_transform), bool(args.augment)
     ### Set random seed
@@ -182,6 +183,14 @@ if __name__ == '__main__':
             model = RSCNN(num_classes)
             model = model.to(device)
             model = nn.DataParallel(model)
+
+        elif args.model == 'point_transformer_kcutmix':
+            model = PointTransformerCls(num_point=args.num_points,
+                                        nblocks=4,
+                                        nneighbor=16,
+                                        num_class=num_classes,
+                                        input_dim=3)    # normal is not used by default!
+            model = model.to(device)
 
         optimizer = torch.optim.Adam(
             model.parameters(),
@@ -312,12 +321,14 @@ if __name__ == '__main__':
                     points[i2, idxs[i2], :] = point_c[i2, idxs[i2], :]
                 # adjust lambda to exactly match point ratio
                 lam = int_lam * 1.0 / args.num_points
-                display_point_cloud(points[0].detach().cpu().numpy())
-                points = points.transpose(2, 1)
+                ## Display interpolation
+                # for i in range(16):
+                #    display_point_cloud(points[i].detach().cpu().numpy())
+                # points = points.transpose(2, 1)  -> not required by point-transformer
                 pred, trans_feat = model(points)
                 loss = criterion(pred, target_a.long()) * (1. - lam) + criterion(pred, target_b.long()) * lam
             else:
-                points = points.transpose(2, 1)
+                # points = points.transpose(2, 1)  -> not required by point-transformer
                 pred, trans_feat = model(points)
                 loss = criterion(pred, target.long())
 
