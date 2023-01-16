@@ -8,10 +8,10 @@ PointCutMix - [paper](https://arxiv.org/abs/2101.01461.pdf)
 ```
 pip install -r requirements.txt
 ```
-Torch needs installed according to the CUDA version - [torch](https://pytorch.org/get-started/locally/)  
+Torch needs to be installed according to the CUDA version - [torch](https://pytorch.org/get-started/locally/)  
 
 ## Compile EMD module
-Because the module is based on cpp it needs to be compiled. To do this - 
+The Earth-Mover's Distance module is based on cpp and needs to be compiled. To do this - 
 ```
 cd emd
 python3 setup.py install
@@ -26,7 +26,7 @@ The default parameters are set to run point-transformer (the model we analyze) w
 ```
 CUDA_VISIBLE_DEVICES=0,1 python train_pointcutmix_k.py
 ```
-
+Test accuracies are calculated during training.
 
 
 
