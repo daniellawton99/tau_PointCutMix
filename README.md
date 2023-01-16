@@ -4,7 +4,7 @@ PointCutMix - [paper](https://arxiv.org/abs/2101.01461.pdf)
 
 # Running Instructions
 
-## Instalation
+## Installation
 ```
 pip install -r requirements.txt
 ```
